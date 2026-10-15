@@ -4,7 +4,7 @@ A minimal, Skill-native development workflow for coding agents.
 
 **The goal is to coordinate existing capabilities, not build another agent framework.** The workflow has one explicit bootstrap operation, `development-workflow init`, and then guides agents to use existing Skills and tools for development.
 
-> Status: **V0 design specification**. This repository currently contains the design, not an implemented Skill or CLI.
+> Status: **V0 implemented** as a Skill in [`development-workflow/`](development-workflow/SKILL.md). There is no CLI.
 
 ## What it does
 
