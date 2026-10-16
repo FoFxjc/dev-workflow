@@ -46,7 +46,8 @@ Read the root `AGENTS.md` if present. Compare it with
   constraints, conventions, prohibitions) that replacement would remove.
 
 Note existing project/service Knowledge Skills (for example under
-`.claude/skills/`, `.agents/skills/`, or `skills/`). Do not generate new ones.
+`.claude/skills/`, `.agents/skills/`, or `skills/`; this workflow and its
+dependencies are not Knowledge Skills). Do not generate new ones.
 
 ### 3. Confirm
 
@@ -79,21 +80,30 @@ Report **READY** only if every dependency and file check passed; otherwise
 ## Development tasks: routing
 
 This is routing guidance, not a stage machine. Skip steps a task does not need,
-and reuse existing plans, tests, and evidence.
+and reuse existing plans, tests, and evidence. A simple task needs no plan,
+delegation, or knowledge capture. The user should not have to name sub-Skills;
+choose them here.
 
-1. **Discover.** Check available Skills (Superpowers' `using-superpowers`
-   governs how) and existing Knowledge Skills for this repo or service.
+1. **Use existing knowledge first.** Read the Knowledge Skills relevant to
+   this repo or service and reuse them; explore only what they do not cover.
+   Superpowers' `using-superpowers` governs Skill discovery.
 2. **Clarify** unclear or new behavior → `superpowers:brainstorming`.
 3. **Plan** multi-step work → `superpowers:writing-plans`. A trivial fix needs
    no plan.
-4. **Implement, test, debug, verify** → the matching Superpowers Skill
+4. **Implement, test, debug, verify** → invoke the matching Superpowers Skill
    (`test-driven-development`, `systematic-debugging`,
-   `verification-before-completion`, ...).
-5. **Delegated work** → Tallyback (below).
-6. **Review** the actual implementation → `earn-it`. Fix only findings backed
+   `verification-before-completion`, ...) rather than improvising its method.
+5. **Delegated work** → Tallyback is required whenever work is actually
+   delegated (below).
+6. **Review** every completed code change → `earn-it`, small changes
+   included (a small change gets a short review). Fix only findings backed
    by evidence, re-verify, then stop. Do not loop review/rewrite once evidence is
    sufficient or the remaining blocker is explicit.
-7. **Report** the outcome with evidence: what was run, what was not, what is
+7. **Capture knowledge** only when the task produced verified, reusable
+   project or service understanding → `superpowers:writing-skills`, written as
+   a project Skill (Claude Code: `.claude/skills/<name>/SKILL.md`). Most tasks
+   produce none.
+8. **Report** the outcome with evidence: what was run, what was not, what is
    unproven.
 
 ## Handoff boundaries
