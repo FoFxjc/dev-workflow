@@ -4,8 +4,8 @@ A minimal, Skill-native development workflow for coding agents.
 
 It coordinates existing capabilities instead of building another agent framework.
 You run one explicit bootstrap, `development-workflow init`, and from then on every
-new session in that repository routes development work to the right existing
-Skills on its own:
+new session in that repository is directed by `AGENTS.md` to route development
+work to the right existing Skills, without you naming them:
 
 - **Superpowers** for clarifying, planning, implementing, testing, and verifying.
 - **Tallyback** for accountability when work is actually delegated.
@@ -67,8 +67,9 @@ Init will:
 2. Create the root `AGENTS.md` from
    [`references/agents-template.md`](development-workflow/references/agents-template.md).
 3. If `AGENTS.md` already exists, show a diff and ask first. The original is
-   backed up to `AGENTS.md.bak-<timestamp>`, and its project rules are kept
-   verbatim under `## Project-specific rules`. If you decline, nothing changes.
+   backed up to `AGENTS.md.bak-<timestamp>`. By default its project rules are
+   kept verbatim under `## Project-specific rules`; any rule proposed for removal
+   is named for your approval. If you decline, nothing changes.
 4. Read the file back and report **READY**.
 
 Re-running init on an initialized repository is a no-op: no write, no backup.
