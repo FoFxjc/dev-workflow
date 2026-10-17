@@ -202,7 +202,7 @@ after approval:
   or missing, propose the specific edit to that workflow Skill; once
   approved, apply it with an `Updated:` line (date and reason).
 - **Solidify, conservatively.** Success alone is not a reason. Raise it only
-  when the user says this kind of problem will recur, or the repository
+  after the run, and only when the user says this kind of problem will recur, or the repository
   history or this conversation already shows it recurring; otherwise do not
   mention it. Evaluate before announcing or promising any proposal:
   - Compare the problem with each existing workflow by problem type,

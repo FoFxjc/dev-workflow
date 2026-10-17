@@ -161,8 +161,8 @@ Open a new session and describe the work. You do not need to name
    or substituted.
 5. **Update or solidify.** If the run showed a workflow should change, the agent
    proposes the edit. The edit is applied with an `Updated:` date once you
-   approve. Saving a single-point route as a workflow is suggested only when
-   you say the problem will recur or history shows it recurring. Workflows are
+   approve. Saving a single-point route as a workflow is suggested only after
+   the run, when you say the problem will recur or history shows it recurring. Workflows are
    compared by problem type, scope, constraints, and acceptance evidence;
    identical steps alone don't make them the same. A problem that belongs to
    an existing workflow reuses it. A distinct, stable problem type may get its
