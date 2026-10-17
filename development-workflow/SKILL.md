@@ -203,9 +203,11 @@ after approval:
 - **Solidify, conservatively.** Success alone is not a reason. Raise it only
   when the user says this kind of problem will recur, or the repository
   history or this conversation already shows it recurring; otherwise do not
-  mention it. Compare the route with existing workflows first: if one is
-  substantially equivalent (same stages and Skills), propose reusing it or
-  widening its "Use when" instead of a new Skill. A new
+  mention it. Compare the route with each existing workflow first, and say
+  what you compared. Equivalence means the same stages and Skills, whatever
+  the existing "Use when"/"Not for" wording says; for an equivalent workflow,
+  propose widening its scope (editing "Use when"/"Not for", with approval)
+  instead of a new Skill. A new
   `.claude/skills/workflow-<type>/SKILL.md` (from
   `references/workflow-template.md`) serves one kind of problem; never a
   catch-all such as `workflow-small-change` or `workflow-bounded-change`.
