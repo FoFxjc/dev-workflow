@@ -162,13 +162,14 @@ Open a new session and describe the work. You do not need to name
 Example workflow Skills in one repository: `workflow-feature`,
 `workflow-bugfix`, `workflow-small-change`, `workflow-db-migration`.
 
+Understanding the requirement always comes first and is not part of a route.
 A route step looks like this
 ([template](development-workflow/references/workflow-template.md)):
 
 ```text
-1. Understand — superpowers:brainstorming — via AskUserQuestion — done when the design is approved
-2. Implement — superpowers:test-driven-development — via Skill tool — done when tests pass
-3. Review — earn-it — via Skill tool — done when VERDICT is PASS or findings are fixed
+1. Implement — superpowers:test-driven-development — via Skill tool — done when tests pass
+2. Review — earn-it — via Skill tool — done when VERDICT is PASS or findings are fixed
+3. Verify — superpowers:verification-before-completion — via shell commands — done when fresh output is kept
 ```
 
 Small tasks get a short requirement check and a short route, not ceremony.

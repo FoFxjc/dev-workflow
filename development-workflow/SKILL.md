@@ -110,7 +110,8 @@ paths, and its approval gates. While it runs:
   `AskUserQuestion`, recommended option first. Follow brainstorming's own
   pacing (one question at a time).
 - **Done** when the user has confirmed the understanding and no decision is
-  silently assumed. Only then select a route.
+  silently assumed. Select the route (step 2) before presenting the design
+  for approval, so the design and the route are approved together.
 
 ### 2. Select a workflow, or compose a single-point route
 
@@ -128,8 +129,7 @@ each one's "Use when" and "Not for" with the understood requirement.
    descriptions; open the full `SKILL.md` only of candidates you may use.
    Capabilities that are not installed may be suggested to the user, never
    installed without authorization.
-2. **Map each stage to a capability**, for example: understand
-   (`brainstorming`), plan (`writing-plans`), implement and test
+2. **Map each stage to a capability**, for example: plan (`writing-plans`), implement and test
    (`test-driven-development`, `systematic-debugging`), review (`earn-it`, and
    other review Skills when they fit such as `security-review`), verify
    (`verification-before-completion`, the project's test commands), capture
@@ -160,8 +160,8 @@ each one's "Use when" and "Not for" with the understood requirement.
   the plan already has — with the in-chat design for bounded work, or at
   `writing-plans`' execution handoff for planned work — not as an extra round.
   Offer 2–3 route options with `AskUserQuestion`, recommended first. Every
-  option keeps the required stages (understanding the requirement, `earn-it`
-  review of code changes, verification); options differ in execution mode,
+  option keeps the required stages (`earn-it` review of code changes and
+  verification; understanding the requirement already happened in step 1); options differ in execution mode,
   depth, and cost, never by dropping those. Each
   description states the stages, Skills, native capabilities, rough cost, and
   whether Tallyback will track delegated work; the preview holds the full
@@ -193,7 +193,8 @@ Ask with `AskUserQuestion`, recommended answer first, and change files only
 after approval:
 
 - **Update:** if the run deviated from the workflow, or showed a step is wrong
-  or missing, propose the specific edit to that workflow Skill.
+  or missing, propose the specific edit to that workflow Skill; once
+  approved, apply it with an `Updated:` line (date and reason).
 - **Solidify:** if a single-point route succeeded and this kind of problem will
   recur, propose saving it as a new workflow Skill
   (`.claude/skills/workflow-<type>/SKILL.md`, from
