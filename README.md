@@ -148,19 +148,25 @@ Open a new session and describe the work. You do not need to name
    session, reading their descriptions broadly and opening only the
    candidates.
 3. **Approve the route as part of the plan.** A single-point route or a changed
-   workflow is offered as 2–3 options at the plan's existing approval point
-   (the in-chat design, or the `writing-plans` execution handoff). Each option
-   lists its stages, Skills, native capabilities, cost, and whether Tallyback
-   is used. An approved workflow is reused without asking again.
-4. **Run the route.** Every code change gets an `earn-it` review. Only findings
-   with evidence are fixed, then re-verified.
+   workflow is approved at the plan's existing approval point (the in-chat
+   design, or the `writing-plans` execution handoff). With one reasonable
+   route, one "yes" approves the design and route together. Only meaningfully
+   different routes are offered as 2–3 options, each with its stages, Skills,
+   cost, and whether Tallyback is used. An approved workflow is reused without
+   asking again.
+4. **Run the route.** Each stage's named Skill is invoked; a passing command
+   does not replace it. Every code change gets an `earn-it` review. Only
+   findings with evidence are fixed, then re-verified. The report lists each
+   workflow stage as executed, skipped, blocked, or substituted.
 5. **Update or solidify.** If the run showed a workflow should change, the agent
    proposes the edit. The edit is applied with an `Updated:` date once you
-   approve. If a single-point route worked and the problem will recur, it
-   proposes saving it as a new workflow, or extending an overlapping one.
+   approve. Saving a single-point route as a workflow is suggested only when
+   you say the problem will recur or history shows it recurring. If an
+   existing workflow is equivalent, it proposes reusing or widening that one
+   instead. It never creates catch-all workflows.
 
 Example workflow Skills in one repository: `workflow-feature`,
-`workflow-bugfix`, `workflow-small-change`, `workflow-db-migration`.
+`workflow-bugfix`, `workflow-db-migration`.
 
 Understanding the requirement always comes first and is not part of a route.
 A route step looks like this
@@ -191,19 +197,21 @@ $ cd my-project && claude
 $ claude        # first CLI change: no workflow yet
 > Add a --shout flag to app.py that prints the greeting in upper case.
   → development-workflow → superpowers:brainstorming (bounded: short design)
-  → no workflow fits → single-point route options, recommended first
-  → you pick one → TDD → earn-it → verification
-  → "Save this route as workflow-small-cli-change?" → yes (Claude Code asks
-    permission to write .claude/skills/…)
+  → no workflow fits → design + single-point route, one approval
+  → TDD → earn-it → verification-before-completion
+
+> Add a --sort flag too. We add CLI flags all the time.
+  → recurring need stated → "Save this route as workflow-cli-change?"
+  → yes (Claude Code asks permission to write .claude/skills/…)
 
 $ claude        # later, a similar change
 > Add a --name option so it greets that name.
-  → matches workflow-small-cli-change → only the design is confirmed;
+  → matches workflow-cli-change → only the design is confirmed;
     the route is not asked again
 
 $ claude        # a different kind of problem
 > Add a GitHub Actions CI configuration that runs pytest on every push.
-  → workflow-small-cli-change says "Not for: CI" → single-point route options
+  → workflow-cli-change says "Not for: CI" → design + single-point route
 ```
 
 ## Component boundaries

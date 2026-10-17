@@ -159,14 +159,17 @@ each one's "Use when" and "Not for" with the understood requirement.
 - **Single-point route or changed workflow:** present it in the same approval
   the plan already has — with the in-chat design for bounded work, or at
   `writing-plans`' execution handoff for planned work — not as an extra round.
-  Offer 2–3 route options with `AskUserQuestion`, recommended first. Every
-  option keeps the required stages (`earn-it` review of code changes and
-  verification; understanding the requirement already happened in step 1); options differ in execution mode,
-  depth, and cost, never by dropping those. Each
-  description states the stages, Skills, native capabilities, rough cost, and
-  whether Tallyback will track delegated work; the preview holds the full
-  route. Choosing an option approves the route and its execution mode. A route
-  with a Workflow step must name the Workflow and its cost in the option.
+  - **One reasonable route:** show it with the design; the user's single
+    approval covers both. Do not ask a separate route question.
+  - **Meaningfully different routes** (execution strategy, cost, or risk):
+    offer 2–3 options with `AskUserQuestion`, recommended first. Never invent
+    weaker alternatives to fill a count.
+
+  Every route keeps the required stages (`earn-it` review of code changes and
+  verification; understanding the requirement already happened in step 1).
+  State its stages, Skills, native capabilities, rough cost, and whether
+  Tallyback will track delegated work. Approving a route approves its execution
+  mode; a route with a Workflow step must name the Workflow and its cost.
 - If you cannot ask in this turn, present the options as text and stop.
 
 After approval, write a changed workflow back to its Skill file and add an
@@ -175,7 +178,9 @@ written anywhere yet; see step 5.
 
 ### 4. Run the route
 
-Follow the steps in order, invoking each named Skill. Then:
+Each stage is an obligation: invoke every Skill it names with the Skill tool.
+A passing command does not stand in for a named Skill. Substitute or skip a
+stage only if the workflow allows it or the user approves. Then:
 
 - **Delegated work** (a subagent or worker owns an attempt that delivers
   changes) → Tallyback, per the boundaries below. Read-only lookups and
@@ -195,18 +200,24 @@ after approval:
 - **Update:** if the run deviated from the workflow, or showed a step is wrong
   or missing, propose the specific edit to that workflow Skill; once
   approved, apply it with an `Updated:` line (date and reason).
-- **Solidify:** if a single-point route succeeded and this kind of problem will
-  recur, propose saving it as a new workflow Skill
-  (`.claude/skills/workflow-<type>/SKILL.md`, from
-  `references/workflow-template.md`). If it overlaps an existing workflow,
-  propose extending that workflow instead of adding a near-duplicate.
+- **Solidify, conservatively.** Success alone is not a reason. Raise it only
+  when the user says this kind of problem will recur, or the repository
+  history or this conversation already shows it recurring; otherwise do not
+  mention it. Compare the route with existing workflows first: if one is
+  substantially equivalent (same stages and Skills), propose reusing it or
+  widening its "Use when" instead of a new Skill. A new
+  `.claude/skills/workflow-<type>/SKILL.md` (from
+  `references/workflow-template.md`) serves one kind of problem; never a
+  catch-all such as `workflow-small-change` or `workflow-bounded-change`.
 
 Claude Code guards writes under `.claude/` with its own permission prompt;
 that prompt is part of the approval. If the write is denied or cannot be
 prompted (headless), show the full file content and stop.
 
 Report the outcome with evidence: what was run, what was not, what is
-unproven.
+unproven. When a workflow was run, list each stage as executed, skipped,
+blocked, or substituted, citing the Skill call or command output. Never claim
+the workflow was followed in full if any stage was not executed as written.
 
 ## Handoff boundaries
 
