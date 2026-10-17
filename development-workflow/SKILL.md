@@ -170,7 +170,8 @@ each one's "Use when" and "Not for" with the understood requirement.
   State its stages, Skills, native capabilities, rough cost, and whether
   Tallyback will track delegated work. Approving a route approves its execution
   mode; a route with a Workflow step must name the Workflow and its cost.
-- If you cannot ask in this turn, present the options as text and stop.
+- If you cannot ask in this turn, present the design with its route (or the
+  route options) as text and stop.
 
 After approval, write a changed workflow back to its Skill file and add an
 `Updated:` line with today's date and the reason. A single-point route is not
@@ -203,23 +204,30 @@ after approval:
 - **Solidify, conservatively.** Success alone is not a reason. Raise it only
   when the user says this kind of problem will recur, or the repository
   history or this conversation already shows it recurring; otherwise do not
-  mention it. Compare the route with each existing workflow first, and say
-  what you compared. Equivalence means the same stages and Skills, whatever
-  the existing "Use when"/"Not for" wording says; for an equivalent workflow,
-  propose widening its scope (editing "Use when"/"Not for", with approval)
-  instead of a new Skill. A new
-  `.claude/skills/workflow-<type>/SKILL.md` (from
-  `references/workflow-template.md`) serves one kind of problem; never a
-  catch-all such as `workflow-small-change` or `workflow-bounded-change`.
+  mention it. Evaluate before announcing or promising any proposal:
+  - Compare the problem with each existing workflow by problem type,
+    "Use when", "Not for", constraints, and acceptance evidence, and say what
+    you compared. Identical stages and Skills only signal possible
+    duplication; they do not make two workflows equivalent.
+  - Reuse or extend a workflow only when the problem genuinely belongs to its
+    scope. Never widen a narrow workflow into a generic category to avoid a
+    new file; never create a catch-all such as `workflow-small-change` or
+    `workflow-bounded-change`.
+  - A distinct problem type may get its own workflow
+    (`.claude/skills/workflow-<type>/SKILL.md`, from
+    `references/workflow-template.md`), even with identical steps, only when
+    its boundary is stable enough to state a precise "Use when" and
+    "Not for". Otherwise recommend keeping the single-point route.
 
 Claude Code guards writes under `.claude/` with its own permission prompt;
 that prompt is part of the approval. If the write is denied or cannot be
 prompted (headless), show the full file content and stop.
 
 Report the outcome with evidence: what was run, what was not, what is
-unproven. When a workflow was run, list each stage as executed, skipped,
-blocked, or substituted, citing the Skill call or command output. Never claim
-the workflow was followed in full if any stage was not executed as written.
+unproven. For the route that ran, a saved workflow or a single-point route,
+list each stage as executed, skipped, blocked, or substituted, citing the
+Skill call or command output. Never claim the route was followed in full if
+any stage was not executed as written.
 
 ## Handoff boundaries
 

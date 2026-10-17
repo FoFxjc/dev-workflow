@@ -157,13 +157,17 @@ Open a new session and describe the work. You do not need to name
 4. **Run the route.** Each stage's named Skill is invoked; a passing command
    does not replace it. Every code change gets an `earn-it` review. Only
    findings with evidence are fixed, then re-verified. The report lists each
-   workflow stage as executed, skipped, blocked, or substituted.
+   route stage (saved workflow or single-point) as executed, skipped, blocked,
+   or substituted.
 5. **Update or solidify.** If the run showed a workflow should change, the agent
    proposes the edit. The edit is applied with an `Updated:` date once you
    approve. Saving a single-point route as a workflow is suggested only when
-   you say the problem will recur or history shows it recurring. If an
-   existing workflow is equivalent, it proposes reusing or widening that one
-   instead. It never creates catch-all workflows.
+   you say the problem will recur or history shows it recurring. Workflows are
+   compared by problem type, scope, constraints, and acceptance evidence;
+   identical steps alone don't make them the same. A problem that belongs to
+   an existing workflow reuses it. A distinct, stable problem type may get its
+   own workflow. Otherwise the single-point route is kept. Narrow workflows are
+   never widened into catch-alls.
 
 Example workflow Skills in one repository: `workflow-feature`,
 `workflow-bugfix`, `workflow-db-migration`.
@@ -243,7 +247,8 @@ records > agent claims.
   the Workflow tool. Picking a route option that names a Workflow step is meant
   as that opt-in, but this has not been verified.
 - **Headless sessions** (`claude -p`) cannot ask interactive questions. The
-  agent presents route options as text and stops.
+  agent presents the design with its route (or route options) as text and
+  stops.
 - **Saving a workflow writes under `.claude/`**, which Claude Code protects
   with its own permission prompt (that prompt is part of the approval). In
   headless sessions the write is refused even with an allow rule, so the agent
