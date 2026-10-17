@@ -98,8 +98,9 @@ small task gets a short requirement check and a short route, not ceremony.
 
 ### 1. Understand the requirement
 
-Invoke `superpowers:brainstorming`; it owns the interview, its task paths, and
-its approval gates. While it runs:
+Invoke `superpowers:brainstorming` with the Skill tool before asking anything
+or proposing routes; do not do its job inline. It owns the interview, its task
+paths, and its approval gates. While it runs:
 
 - **Facts are yours to find, decisions are the user's.** Answer anything the
   repository, its Knowledge Skills, or a command can tell you by looking it up
@@ -158,7 +159,10 @@ each one's "Use when" and "Not for" with the understood requirement.
 - **Single-point route or changed workflow:** present it in the same approval
   the plan already has — with the in-chat design for bounded work, or at
   `writing-plans`' execution handoff for planned work — not as an extra round.
-  Offer 2–3 route options with `AskUserQuestion`, recommended first. Each
+  Offer 2–3 route options with `AskUserQuestion`, recommended first. Every
+  option keeps the required stages (understanding the requirement, `earn-it`
+  review of code changes, verification); options differ in execution mode,
+  depth, and cost, never by dropping those. Each
   description states the stages, Skills, native capabilities, rough cost, and
   whether Tallyback will track delegated work; the preview holds the full
   route. Choosing an option approves the route and its execution mode. A route
@@ -195,6 +199,10 @@ after approval:
   (`.claude/skills/workflow-<type>/SKILL.md`, from
   `references/workflow-template.md`). If it overlaps an existing workflow,
   propose extending that workflow instead of adding a near-duplicate.
+
+Claude Code guards writes under `.claude/` with its own permission prompt;
+that prompt is part of the approval. If the write is denied or cannot be
+prompted (headless), show the full file content and stop.
 
 Report the outcome with evidence: what was run, what was not, what is
 unproven.

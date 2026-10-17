@@ -187,11 +187,22 @@ $ cd my-project && claude
 > development-workflow init
   Superpowers ✓  Tallyback ✓  Earn-it ✓ → AGENTS.md created → READY
 
-$ claude        # a new session
+$ claude        # first CLI change: no workflow yet
 > Add a --shout flag to app.py that prints the greeting in upper case.
-  → development-workflow → app-knowledge (existing Knowledge Skill)
-  → superpowers:test-driven-development (failing test, then implementation)
-  → earn-it: PASS → report with the commands that were run
+  → development-workflow → superpowers:brainstorming (bounded: short design)
+  → no workflow fits → single-point route options, recommended first
+  → you pick one → TDD → earn-it → verification
+  → "Save this route as workflow-small-cli-change?" → yes (Claude Code asks
+    permission to write .claude/skills/…)
+
+$ claude        # later, a similar change
+> Add a --name option so it greets that name.
+  → matches workflow-small-cli-change → only the design is confirmed;
+    the route is not asked again
+
+$ claude        # a different kind of problem
+> Add a GitHub Actions CI configuration that runs pytest on every push.
+  → workflow-small-cli-change says "Not for: CI" → single-point route options
 ```
 
 ## Component boundaries
@@ -224,6 +235,12 @@ records > agent claims.
   as that opt-in, but this has not been verified.
 - **Headless sessions** (`claude -p`) cannot ask interactive questions. The
   agent presents route options as text and stops.
+- **Saving a workflow writes under `.claude/`**, which Claude Code protects
+  with its own permission prompt (that prompt is part of the approval). In
+  headless sessions the write is refused even with an allow rule, so the agent
+  shows the file content and stops. The interactive prompt itself has not been
+  exercised in testing; saving was tested by writing the approved file by
+  hand.
 - **No automated test suite.** Behavior was verified with live Claude Code
   sessions in throwaway repositories.
 - **Tallyback ships from source only** and needs Node.js 20+.
