@@ -1,19 +1,39 @@
 # dev-workflow
 
-A minimal, Skill-native development workflow for coding agents.
+A Skill-native way to make coding agents follow repeatable development
+processes instead of improvising a new one for every task.
 
-## What it is
+## Why it exists
 
-`development-workflow` is a manual for using Skills: one
-[Agent Skill](development-workflow/SKILL.md) that turns each development
-request into a **route**, an ordered chain of existing Skills connected by
-Claude Code's native capabilities (the Skill tool, subagents,
-`AskUserQuestion`, plan approval, worktrees, the Workflow tool). Routes worth
-keeping are saved, with your separate approval after a run, as **workflow
-Skills** in the repository, one per kind of problem
-(`.claude/skills/workflow-<type>/SKILL.md`), so a dynamic workflow becomes a
-fixed one. Workflow first, single-point second: when no workflow fits, a route
-is composed for that one task and can later be saved as a new workflow.
+Coding agents can write working code and still drift from the agreed process:
+skip a review, change the route mid-task, or treat a delegated worker's
+"done" as proof. Repeating instructions every session does not make the
+process reliable.
+
+**The goal is process stability, not lower token usage or cheaper runs.**
+Required checks may cost more up front; skipped stages and rework can cost
+more later. `development-workflow` makes the intended route explicit,
+reuses it for the same kind of problem, and reports what actually ran.
+It is instruction-based guidance, not an enforcement or acceptance engine.
+
+## How it works
+
+`development-workflow` is one
+[Agent Skill](development-workflow/SKILL.md) that connects existing Skills
+into an ordered **route**. A repository can store approved routes as
+`.claude/skills/workflow-<type>/SKILL.md`, each scoped to a specific kind
+of problem.
+
+- **Matching workflow:** reuse its approved route without approving the
+  route again. The task's design still needs its normal approval.
+- **No matching workflow:** compose a one-off **single-point route** from
+  available Skills and approve it with the design.
+- **After execution:** if the problem recurs and the boundary is stable,
+  propose saving or updating a workflow, with separate approval. Otherwise
+  keep the route one-off.
+
+Workflow matching is based on problem type, scope, constraints, and
+acceptance evidence—not simply whether two routes invoke the same Skills.
 
 Capabilities come from any installed Skill: built-in, plugin, user, or
 project. Three are required:
@@ -39,15 +59,6 @@ that read `AGENTS.md` use it directly. Init also makes sure the root
 same rules through its native `CLAUDE.md` mechanism. The rules are never
 copied into `CLAUDE.md`.
 
-## What problem it solves
-
-Good Skills exist, but each session has to discover them, chain them in the
-right order, and do it again next time. Agents tend to jump straight into
-editing code. Delegated work comes back as a worker's "done" rather than
-evidence. Review tends to be skipped or turned into an endless rewrite loop.
-This Skill puts understanding and a route before code, keeps approved routes
-in one file, and connects the pieces without reimplementing any of them.
-
 ## What it is not
 
 - **Not a CLI.** `development-workflow init` is an instruction you give the
@@ -58,7 +69,7 @@ in one file, and connects the pieces without reimplementing any of them.
 - Not a dependency installer. It checks dependencies and tells you what is
   missing.
 
-## Install (Claude Code)
+## Quick start (Claude Code)
 
 ### 1. Required dependencies
 
@@ -178,11 +189,11 @@ Open a new session and describe the work. You do not need to name
    different routes are offered as 2–3 options, each with its stages, Skills,
    cost, and whether Tallyback is used. An approved workflow is reused without
    asking again.
-4. **Run the route.** Each stage's named Skill is invoked; a passing command
-   does not replace it. Every code change gets an `earn-it` review. Only
-   findings with evidence are fixed, then re-verified. The report lists each
-   route stage (saved workflow or single-point) as executed, skipped, blocked,
-   or substituted.
+4. **Run the route.** Each stage's named Skill must be invoked; a passing
+   command does not replace a required Skill call. Code changes require an
+   `earn-it` review, but invoking the Skill alone does not prove the review
+   produced a verdict. The report lists each stage as executed, skipped,
+   blocked, or substituted, with supporting evidence.
 5. **Update or solidify.** If the run showed a workflow should change, the agent
    proposes the edit. The edit is applied with an `Updated:` date once you
    approve. Saving a single-point route as a workflow is suggested only after
@@ -193,8 +204,9 @@ Open a new session and describe the work. You do not need to name
    own workflow. Otherwise the single-point route is kept. Narrow workflows are
    never widened into catch-alls.
 
-Example workflow Skills in one repository: `workflow-feature`,
-`workflow-bugfix`, `workflow-db-migration`.
+Example narrowly scoped workflow Skills: `workflow-cli-option-change`,
+`workflow-iterator-wrong-result`, `workflow-db-schema-migration`.
+These are examples, not prescribed categories.
 
 Understanding the requirement always comes first and is not part of a route.
 A route step looks like this
@@ -229,8 +241,9 @@ $ claude        # first CLI change: no workflow yet
   → TDD → earn-it → verification-before-completion
 
 > Add a --sort flag too. We add CLI flags all the time.
-  → recurring need stated → "Save this route as workflow-cli-change?"
-  → yes (Claude Code asks permission to write .claude/skills/…)
+  → design + route approval → implementation → review → verification
+  → after the run: "Save this recurring route as workflow-cli-change?"
+  → separate yes (Claude Code asks permission to write .claude/skills/…)
 
 $ claude        # later, a similar change
 > Add a --name option so it greets that name.
@@ -256,6 +269,16 @@ $ claude        # a different kind of problem
 
 Evidence order: repository facts and executable checks > Git facts > Tallyback
 records > agent claims.
+
+## Evidence and limitations
+
+The workflow has been exercised in isolated Claude Code sessions on
+historical `more-itertools` tasks. Five task implementations passed their
+independent functional acceptance tests, and two matching saved workflows
+were selected correctly in reuse checks. These are small-sample observations,
+**not proof that workflows improve functional correctness or reduce cost**.
+An Earn-it instruction-only A/B test (two runs per arm) did not establish
+an incremental benefit; that experimental wording was not adopted.
 
 ## Known limitations
 
@@ -294,8 +317,9 @@ records > agent claims.
   shows the file content and stops. The interactive prompt itself has not been
   exercised in testing; saving was tested by writing the approved file by
   hand.
-- **No automated test suite.** Behavior was verified with live Claude Code
-  sessions in throwaway repositories.
+- **No automated test suite in this repository.** Skill behavior was checked
+  through isolated Claude Code sessions. A separate local evaluation harness
+  was used for trace-based checks; it is not shipped as part of this Skill.
 - **Tallyback ships from source only** and needs Node.js 20+.
 
 ## License
