@@ -33,6 +33,12 @@ short root `AGENTS.md` that makes every future session **workflow-first**:
 understand the requirement, run the matching workflow (or a single-point route),
 get any new or changed route approved as part of the plan, then run it.
 
+`AGENTS.md` is the single source of the project's development rules, and agents
+that read `AGENTS.md` use it directly. Init also makes sure the root
+`CLAUDE.md` contains the import line `@AGENTS.md`, so Claude Code loads the
+same rules through its native `CLAUDE.md` mechanism. The rules are never
+copied into `CLAUDE.md`.
+
 ## What problem it solves
 
 Good Skills exist, but each session has to discover them, chain them in the
@@ -93,7 +99,9 @@ ln -sfn ~/.local/share/dev-workflow/development-workflow ~/.claude/skills/develo
 This makes the Skill available to every new Claude Code session in every
 project. Nothing is copied into individual repositories.
 
-- Update: `git -C ~/.local/share/dev-workflow pull`
+- Update: `git -C ~/.local/share/dev-workflow pull`, then run
+  `development-workflow init` again in each repository. On an initialized
+  repository this only adds what is missing, such as the `CLAUDE.md` import.
 - Uninstall: `rm ~/.claude/skills/development-workflow`
 
 Start a **new** Claude Code session after installing so the Skills are
@@ -114,7 +122,7 @@ The agent then:
    must be available and readable. `tallyback version` and
    `tallyback handshake` must succeed. The `earn-it` Skill must be available
    and readable. If anything is missing, it reports **BLOCKED**, names what is
-   missing, and does not touch `AGENTS.md`.
+   missing, and does not touch `AGENTS.md` or `CLAUDE.md`.
 2. **Creates `AGENTS.md`** from
    [`references/agents-template.md`](development-workflow/references/agents-template.md)
    if the repository has none.
@@ -127,11 +135,26 @@ The agent then:
 4. **Upgrades a v0.1 `AGENTS.md`** (one that starts with the previous
    template) by replacing only that leading template text, after the same
    diff, confirmation, and backup. Your other content stays as it is.
-5. **Verifies** by reading the file back and reports **READY**.
+5. **Connects `CLAUDE.md`.** If there is no root `CLAUDE.md`, it creates one
+   containing only `@AGENTS.md`. If `CLAUDE.md` already has a line that is
+   exactly `@AGENTS.md`, it leaves the file alone. Otherwise it shows the two
+   lines it would append (a blank line and `@AGENTS.md`) and asks for explicit
+   confirmation. On confirmation, the original is backed up to
+   `CLAUDE.md.bak-<YYYYmmddHHMMSS>` and every existing line is kept. Content
+   already in `CLAUDE.md` stays; it applies to Claude Code only, so rules
+   meant for every agent belong in `AGENTS.md`.
+6. **Verifies** by reading both files back. It reports **READY** only if the
+   dependencies passed, `AGENTS.md` starts with the current template, and
+   `CLAUDE.md` contains the import.
 
-Init is idempotent. If `AGENTS.md` already starts with the current template, it
-writes nothing and makes no backup. Init does not create any routes. Commit the
-resulting `AGENTS.md`.
+If you decline either change, init writes neither file and reports
+**BLOCKED (declined)**. Without the import it is never READY. If `AGENTS.md`
+or `CLAUDE.md` is a symlink, a directory, or not writable, init reports
+**BLOCKED** with the reason and changes nothing.
+
+Init is idempotent. If `AGENTS.md` already starts with the current template and
+`CLAUDE.md` already has the import, it writes nothing and makes no backup. Init
+does not create any routes. Commit the resulting `AGENTS.md` and `CLAUDE.md`.
 
 ## Daily use
 
@@ -197,7 +220,7 @@ ledger in a `.tallyback/` directory in the repository.
 ```text
 $ cd my-project && claude
 > development-workflow init
-  Superpowers ✓  Tallyback ✓  Earn-it ✓ → AGENTS.md created → READY
+  Superpowers ✓  Tallyback ✓  Earn-it ✓ → AGENTS.md created → CLAUDE.md created (@AGENTS.md) → READY
 
 $ claude        # first CLI change: no workflow yet
 > Add a --shout flag to app.py that prints the greeting in upper case.
@@ -253,6 +276,15 @@ records > agent claims.
 - **Workflow tool steps:** Claude Code requires the user's explicit opt-in for
   the Workflow tool. Picking a route option that names a Workflow step is meant
   as that opt-in, but this has not been verified.
+- **`CLAUDE.md` and `AGENTS.md` in Claude Code.** Observed in 2.1.283:
+  - Claude Code's built-in AGENTS.md support loads `AGENTS.md` only when the
+    repository has no `CLAUDE.md`. An existing `CLAUDE.md` without the import
+    hides `AGENTS.md` from Claude Code, which is why init adds the import.
+  - With the import, the rules are loaded once, not twice.
+
+  Init manages only the root `CLAUDE.md`, not `.claude/CLAUDE.md` or
+  `CLAUDE.local.md`. A `CLAUDE.md` that is a symlink, for example one pointing
+  to `AGENTS.md`, is reported BLOCKED instead of being rewritten.
 - **Headless sessions** (`claude -p`) cannot ask interactive questions. The
   agent presents the design with its route (or route options) as text and
   stops.
