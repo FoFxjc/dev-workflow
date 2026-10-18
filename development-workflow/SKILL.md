@@ -1,6 +1,6 @@
 ---
 name: development-workflow
-description: Use for every software development task in a repository whose AGENTS.md points here (features, bug fixes, refactors, reviews, delegated work), to understand the requirement, then run the matching `workflow-*` Skill (or a single-point route when none fits), and to create and update those workflows; also when the user runs `development-workflow init` to set up the AGENTS.md entry point.
+description: Use for every software development task in a repository whose AGENTS.md points here (features, bug fixes, refactors, reviews, delegated work), to understand the requirement, then run the matching `workflow-*` Skill (or a single-point route when none fits), and to create and update those workflows; also when the user runs `development-workflow init` to set up the AGENTS.md and CLAUDE.md entry points.
 ---
 
 # Development Workflow
@@ -27,6 +27,11 @@ Run only when the user explicitly asks for `development-workflow init`. Never
 install or modify dependencies without explicit user authorization. Init does
 not create routes; routes are composed once a real requirement is understood.
 
+Init manages two root files. `AGENTS.md` is the single source of the project's
+development rules. `CLAUDE.md` is Claude Code's entry point and only needs the
+import line `@AGENTS.md`, so Claude Code loads the same rules; never copy
+`AGENTS.md` content into it.
+
 ### 1. Preflight
 
 Find the repository root (`git rev-parse --show-toplevel`) and name the current
@@ -50,12 +55,28 @@ Read the root `AGENTS.md` if present. Compare it with
 
 - **Already initialized:** the file begins with the current template text
   exactly. Anything after it is preserved project content. Make no write and
-  no backup; go to Verify.
+  no backup to `AGENTS.md`.
 - **Previous template:** the file begins with the v0.1 template text exactly.
   Propose replacing only that leading text with the current template, keeping
   everything after it unchanged.
 - **Other existing content:** list each project-specific rule (commands,
   constraints, conventions, prohibitions) that replacement would remove.
+
+Then read the root `CLAUDE.md` if present. A valid import is a line that is
+exactly `@AGENTS.md` (surrounding spaces allowed), outside code blocks and
+inline code.
+
+- **No `CLAUDE.md`:** propose creating it with the single line `@AGENTS.md`.
+- **Valid import present:** make no write and no backup to `CLAUDE.md`.
+- **No valid import:** propose appending a blank line and `@AGENTS.md` at the
+  end, keeping every existing line. Tell the user that its other content
+  applies to Claude Code only and that shared rules belong in `AGENTS.md`; do
+  not move or rewrite that content.
+
+If `AGENTS.md` or `CLAUDE.md` is a symlink, a directory, or another
+non-regular file, or a file that would be written is not writable (check with
+`test -L`, `test -f`, `test -w`), report **BLOCKED** naming the file and the
+reason; touch nothing; stop.
 
 Note existing workflow Skills (`.claude/skills/workflow-*/SKILL.md`), and note
 existing project/service Knowledge Skills (for example under `.claude/skills/`,
@@ -64,7 +85,8 @@ Knowledge Skills). Do not generate either.
 
 ### 3. Confirm
 
-Show the dependency results and the proposed file content.
+Show the dependency results and the proposed content of each file that would
+change.
 
 - **No `AGENTS.md`:** the explicit `init` request is the confirmation; write
   the template as-is.
@@ -73,23 +95,38 @@ Show the dependency results and the proposed file content.
   existing rules verbatim. Name any rule you propose to drop. Then **ask and
   wait for explicit confirmation** of the replacement. If you cannot ask in
   this turn, stop here and report that confirmation is pending.
+- **No `CLAUDE.md`:** the explicit `init` request is the confirmation.
+- **Existing `CLAUDE.md` without the import:** show the diff (the appended
+  lines) and **ask and wait for explicit confirmation**, separately from any
+  `AGENTS.md` question. If you cannot ask in this turn, stop here and report
+  that confirmation is pending.
 
-If the user declines, do not modify `AGENTS.md`; report BLOCKED (declined).
+If the user declines either change, write neither file; report BLOCKED
+(declined), naming the declined file. Init cannot be READY without the
+`CLAUDE.md` import.
 
 ### 4. Write
 
-Only after a passing preflight (and confirmation, when replacing):
+Only after a passing preflight and confirmation of every change that needs
+it. Write only the files that change; an unchanged file gets no write and no
+backup.
 
-1. If `AGENTS.md` exists, copy it to `AGENTS.md.bak-<YYYYmmddHHMMSS>` first.
-2. Write the confirmed content to the root `AGENTS.md`.
+1. `AGENTS.md`: if it exists, copy it to `AGENTS.md.bak-<YYYYmmddHHMMSS>`
+   first, then write the confirmed content.
+2. `CLAUDE.md`: if it exists, copy it to `CLAUDE.md.bak-<YYYYmmddHHMMSS>`
+   first, then append the import; if it does not exist, create it containing
+   only `@AGENTS.md`.
+
+If a write fails, stop and report BLOCKED with the error; keep the backups.
 
 ### 5. Verify
 
-Read back `AGENTS.md`. Confirm it begins with the current template text and
-names `development-workflow`, and that the backup (if any) matches the
-original. Report **READY** only if every dependency and file check passed;
-otherwise **BLOCKED** with actionable reasons. Include the backup path when one
-was made.
+Read back both files. Confirm that `AGENTS.md` begins with the current template
+text and names `development-workflow`; that `CLAUDE.md` is a regular file with
+a valid `@AGENTS.md` import and all of its original lines; and that each backup
+matches its original. Report **READY** only if the preflight, `AGENTS.md`, and
+`CLAUDE.md` checks all passed; otherwise **BLOCKED** with actionable reasons.
+Include each backup path made.
 
 ## Development tasks
 
