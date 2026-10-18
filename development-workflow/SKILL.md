@@ -73,10 +73,12 @@ inline code.
   applies to Claude Code only and that shared rules belong in `AGENTS.md`; do
   not move or rewrite that content.
 
-If `AGENTS.md` or `CLAUDE.md` is a symlink, a directory, or another
-non-regular file, or a file that would be written is not writable (check with
-`test -L`, `test -f`, `test -w`), report **BLOCKED** naming the file and the
-reason; touch nothing; stop.
+Check both paths with `ls -ld AGENTS.md CLAUDE.md` and read each line: a
+type other than `-` (for example `l`, a symlink, or `d`) is not a regular file,
+and an owner permission without `w` means not writable. Do not infer
+writability from the absence of an error. If either file is not a regular file,
+or a file that would be written is not writable, report **BLOCKED** naming the
+file and the reason; touch nothing; stop.
 
 Note existing workflow Skills (`.claude/skills/workflow-*/SKILL.md`), and note
 existing project/service Knowledge Skills (for example under `.claude/skills/`,
