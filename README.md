@@ -1,75 +1,100 @@
 # dev-workflow
 
-A Skill-native way to make coding agents follow repeatable development
-processes instead of improvising a new one for every task.
+**Build the workflows you need. Reuse the skills you already have.**
+
+`development-workflow` is one [Agent Skill](development-workflow/SKILL.md): a
+small, development-focused Workflow Core for coding agents. It selects,
+composes, invokes and reuses existing Skills, and it does not reimplement
+them.
 
 ## Why it exists
 
 Coding agents can write working code and still drift from the agreed process:
-skip a review, change the route mid-task, or treat a delegated worker's
-"done" as proof. Repeating instructions every session does not make the
-process reliable.
+- skip a review;
+- change the route mid-task;
+- treat a delegated worker's "done" as proof.
 
-**The goal is process stability, not lower token usage or cheaper runs.**
-Required checks may cost more up front; skipped stages and rework can cost
-more later. `development-workflow` makes the intended route explicit,
-reuses it for the same kind of problem, and reports what actually ran.
-It is instruction-based guidance, not an enforcement or acceptance engine.
+Repeating instructions every session does not make the process reliable.
 
-## How it works
+The goal is **stable, reusable execution procedures**, not lower token usage
+or cheaper runs. Required checks may cost more up front. Skipped stages and
+rework usually cost more later.
 
-`development-workflow` is one
-[Agent Skill](development-workflow/SKILL.md) that connects existing Skills
-into an ordered **route**. A repository can store approved routes as
-`.claude/skills/workflow-<type>/SKILL.md`, each scoped to a specific kind
-of problem.
+Principles:
 
-- **Matching workflow:** reuse its approved route without approving the
-  route again. The task's design still needs its normal approval.
-- **No matching workflow:** compose a one-off **single-point route** from
-  available Skills and approve it with the design.
-- **After execution:** if the problem recurs and the boundary is stable,
-  propose saving or updating a workflow, with separate approval. Otherwise
-  keep the route one-off.
+- **Reuse first:** use existing Skills and the host's native capabilities
+  whenever they cover the need.
+- **Bridge second:** connect existing capabilities only where a real
+  integration gap exists. The `CLAUDE.md` → `AGENTS.md` import is one example.
+- **Build last:** add a new mechanism only when reuse and bridging cannot
+  solve the problem.
+- **Workflow fidelity:** once an execution procedure is validated, stabilize
+  it as a workflow instead of improvising it again.
+- **Minimal complexity:** every additional abstraction has to justify its
+  existence.
 
-Workflow matching is based on problem type, scope, constraints, and
-acceptance evidence—not simply whether two routes invoke the same Skills.
+## How the Workflow Core works
 
-Capabilities come from any installed Skill: built-in, plugin, user, or
-project. Three are required:
+1. **Understand the requirement first,** with `superpowers:brainstorming`.
+2. **Select a workflow.** A repository can store approved routes as workflow
+   Skills, `.claude/skills/workflow-<type>/SKILL.md`. Each one is scoped by a
+   precise "Use when" and "Not for".
+   - Matching uses specific problem semantics, constraints and acceptance
+     evidence, not generic task categories.
+   - Two problems that happen to invoke the same Skills are not the same
+     workflow.
+   - A matching workflow is reused without approving its route again. The
+     task's design still gets its normal approval.
+3. **No workflow fits?** Compose a one-off **single-point route** from the
+   available Skills. It is approved together with the design: one decision
+   when there is one reasonable route, or 2–3 options when routes genuinely
+   differ.
+4. **Run the route.** Each stage invokes its named Skill. The report lists
+   every stage as executed, skipped, blocked or substituted, with evidence.
+5. **After the run:**
+   - If the run showed a saved workflow should change, the agent proposes the
+     edit.
+   - A single-point route may be proposed as a new workflow only when you say
+     the problem will recur, or the repository history shows it recurring.
+   - Either change needs your **separate** approval.
+   - Narrow workflows are never widened into catch-alls.
 
-- **[Superpowers](https://github.com/obra/superpowers)** for understanding the
-  requirement, planning, implementing, testing, and verifying.
-- **[Tallyback](https://github.com/FoFxjc/tallyback)** for accountability when
-  work is actually delegated to another agent.
-- **[Earn-it](https://github.com/FoFxjc/earn-it)** for reviewing the finished
-  implementation for unjustified complexity and unsupported claims.
+Three things are kept apart:
+- **Skill invocation:** the Skill was loaded.
+- **Stage completion:** the Skill's required output exists, for example an
+  Earn-it verdict.
+- **Independent verification:** tests or checks you can run yourself.
 
-Your own **Knowledge Skills** hold verified, reusable understanding of a
-repository or service.
+None of them stands in for another.
 
-You set up a repository once with `development-workflow init`. That writes a
-short root `AGENTS.md` that makes every future session **workflow-first**:
-understand the requirement, run the matching workflow (or a single-point route),
-get any new or changed route approved as part of the plan, then run it.
+The Core only coordinates. It holds no procedures of its own, and it is not a
+CLI, runtime, orchestrator, scheduler or state database.
 
-`AGENTS.md` is the single source of the project's development rules, and agents
-that read `AGENTS.md` use it directly. Init also makes sure the root
-`CLAUDE.md` contains the import line `@AGENTS.md`, so Claude Code loads the
-same rules through its native `CLAUDE.md` mechanism. The rules are never
-copied into `CLAUDE.md`.
+### Project instructions: `AGENTS.md`, bridged into `CLAUDE.md`
 
-## What it is not
+`AGENTS.md` is the single source of the project's development instructions.
+Agents that read `AGENTS.md` use it directly. The root `CLAUDE.md` contains
+the import line `@AGENTS.md`, so Claude Code loads the same instructions
+through its native mechanism. They are never copied into `CLAUDE.md`.
 
-- **Not a CLI.** `development-workflow init` is an instruction you give the
-  agent inside a session. No executable is installed.
-- Not an agent framework, orchestrator, scheduler, runtime, or state database.
-- Not a replacement for Superpowers, Tallyback, Earn-it, or any other Skill.
-  It hands off to them and follows their own instructions.
-- Not a dependency installer. It checks dependencies and tells you what is
-  missing.
+## Existing Skills and their responsibilities
 
-## Quick start (Claude Code)
+Capabilities come from any installed Skill: built-in, plugin, user or project.
+Three are required.
+
+| Component | Responsibility |
+| --- | --- |
+| **[Superpowers](https://github.com/obra/superpowers)** | The development method: understanding the requirement, planning, test-driven implementation, verification |
+| **[Earn-it](https://github.com/FoFxjc/earn-it)** | Reviews the finished change for unjustified complexity and unsupported claims. Its verdict does not replace tests |
+| **[Tallyback](https://github.com/FoFxjc/tallyback)** | Accountability ledger, used **only when work is actually delegated**. A worker's "done" is a Claim, not proof. An Earn-it `PASS` never settles a task; settlement is an explicit `tallyback settle` |
+| **Workflow Skills** (`workflow-*`, per repository) | Approved routes only, one kind of problem each: which capabilities, in which order, connected how. No procedures, no project knowledge |
+| **Knowledge Skills** (yours) | Verified, reusable understanding of a repository or service. Never in `AGENTS.md`, and most tasks produce none |
+| **development-workflow** | Chooses, connects and hands off. Each selected Skill's own instructions govern how it runs |
+
+Evidence order: repository facts and executable checks > Git facts >
+Tallyback records > agent claims.
+
+## Install and initialize (Claude Code)
 
 ### 1. Required dependencies
 
@@ -97,7 +122,8 @@ mkdir -p ~/.claude/skills/earn-it
 cp ~/.local/share/earn-it/SKILL.md ~/.claude/skills/earn-it/SKILL.md
 ```
 
-These follow each project's own README. If they differ, the upstream README wins.
+These follow each project's own README. If they differ, the upstream README
+wins.
 
 ### 2. development-workflow (once per machine)
 
@@ -108,17 +134,15 @@ ln -sfn ~/.local/share/dev-workflow/development-workflow ~/.claude/skills/develo
 ```
 
 This makes the Skill available to every new Claude Code session in every
-project. Nothing is copied into individual repositories.
+project. Nothing is copied into individual repositories. Start a **new**
+session after installing, so the Skills are discovered.
 
-- Update: `git -C ~/.local/share/dev-workflow pull`, then run
+- **Update:** run `git -C ~/.local/share/dev-workflow pull`, then run
   `development-workflow init` again in each repository. On an initialized
   repository this only adds what is missing, such as the `CLAUDE.md` import.
-- Uninstall: `rm ~/.claude/skills/development-workflow`
+- **Uninstall:** `rm ~/.claude/skills/development-workflow`
 
-Start a **new** Claude Code session after installing so the Skills are
-discovered.
-
-## Initialize a repository (once per repository)
+### 3. Initialize a repository (once per repository)
 
 Open Claude Code in the root of a Git repository and send:
 
@@ -126,106 +150,89 @@ Open Claude Code in the root of a Git repository and send:
 development-workflow init
 ```
 
-The agent then:
+`development-workflow init` is an instruction to the agent; no executable is
+installed. The agent then:
 
-1. **Checks dependencies** as the current session sees them. Superpowers'
-   `using-superpowers`, `brainstorming`, `writing-plans`, and `writing-skills`
-   must be available and readable. `tallyback version` and
-   `tallyback handshake` must succeed. The `earn-it` Skill must be available
-   and readable. If anything is missing, it reports **BLOCKED**, names what is
-   missing, and does not touch `AGENTS.md` or `CLAUDE.md`.
+1. **Checks dependencies** as the current session sees them.
+   - Superpowers' `using-superpowers`, `brainstorming`, `writing-plans` and
+     `writing-skills` must be available and readable.
+   - `tallyback version` and `tallyback handshake` must succeed.
+   - The `earn-it` Skill must be available and readable.
+
+   If anything is missing, it reports **BLOCKED**, names what is missing, and
+   does not touch `AGENTS.md` or `CLAUDE.md`.
 2. **Creates `AGENTS.md`** from
    [`references/agents-template.md`](development-workflow/references/agents-template.md)
    if the repository has none.
-3. **Handles an existing `AGENTS.md`** by showing a diff and asking for explicit
-   confirmation first. By default your existing rules are kept verbatim under
-   `## Project-specific rules`, and any rule it proposes to drop is named for
-   your approval. On confirmation, the original is backed up to
-   `AGENTS.md.bak-<YYYYmmddHHMMSS>` before writing. If you decline, nothing
-   changes.
-4. **Upgrades a v0.1 `AGENTS.md`** (one that starts with the previous
-   template) by replacing only that leading template text, after the same
-   diff, confirmation, and backup. Your other content stays as it is.
-5. **Connects `CLAUDE.md`.** If there is no root `CLAUDE.md`, it creates one
-   containing only `@AGENTS.md`. If `CLAUDE.md` already has a line that is
-   exactly `@AGENTS.md`, it leaves the file alone. Otherwise it shows the two
-   lines it would append (a blank line and `@AGENTS.md`) and asks for explicit
-   confirmation. On confirmation, the original is backed up to
-   `CLAUDE.md.bak-<YYYYmmddHHMMSS>` and every existing line is kept. Content
-   already in `CLAUDE.md` stays; it applies to Claude Code only, so rules
-   meant for every agent belong in `AGENTS.md`.
+3. **Handles an existing `AGENTS.md`** by showing a diff and asking for
+   explicit confirmation first.
+   - By default your existing rules are kept verbatim under
+     `## Project-specific rules`.
+   - Any rule it proposes to drop is named for your approval.
+   - On confirmation, the original is backed up to
+     `AGENTS.md.bak-<YYYYmmddHHMMSS>` before writing.
+4. **Upgrades a v0.1 `AGENTS.md`** (one that starts with the
+   [previous template](development-workflow/references/agents-template-v0.1.md))
+   by replacing only that leading template text. The same diff, confirmation
+   and backup apply, and your other content stays as it is.
+5. **Connects `CLAUDE.md`.**
+   - No root `CLAUDE.md`: it creates one containing only `@AGENTS.md`.
+   - A `CLAUDE.md` with a line that is exactly `@AGENTS.md` (outside code
+     blocks) is left alone.
+   - Otherwise it shows the two lines it would append (a blank line and
+     `@AGENTS.md`) and asks for explicit confirmation. On confirmation, the
+     original is backed up to `CLAUDE.md.bak-<YYYYmmddHHMMSS>` and every
+     existing line is kept.
+   - Other content in `CLAUDE.md` applies to Claude Code only, so rules meant
+     for every agent belong in `AGENTS.md`.
 6. **Verifies** by reading both files back. It reports **READY** only if the
    dependencies passed, `AGENTS.md` starts with the current template, and
    `CLAUDE.md` contains the import.
 
-If you decline either change, init writes neither file and reports
-**BLOCKED (declined)**. Without the import it is never READY. If `AGENTS.md`
-or `CLAUDE.md` is a symlink, a directory, or not writable, init reports
-**BLOCKED** with the reason and changes nothing.
+If init does not finish:
+- **You decline either change:** it writes neither file and reports
+  **BLOCKED (declined)**. Without the import it is never READY.
+- **`AGENTS.md` or `CLAUDE.md` is a symlink, a directory, or not
+  writable:** it reports **BLOCKED** with the reason and changes nothing.
 
-Init is idempotent. If `AGENTS.md` already starts with the current template and
-`CLAUDE.md` already has the import, it writes nothing and makes no backup. Init
-does not create any routes. Commit the resulting `AGENTS.md` and `CLAUDE.md`.
+Init is idempotent. If both files are already in place, it writes nothing and
+makes no backup. Init does not create any routes. Commit the resulting
+`AGENTS.md` and `CLAUDE.md`.
 
 ## Daily use
 
 Open a new session and describe the work. You do not need to name
-`development-workflow` or any sub-Skill. Each task goes through these steps:
+`development-workflow` or any sub-Skill.
 
-1. **Understand the requirement** with `superpowers:brainstorming`. The agent
-   looks facts up itself (in the repo, Knowledge Skills, or commands, using an
-   Explore subagent for broad searches). It asks you only for decisions, one
-   at a time, each with a recommended answer (`AskUserQuestion`).
-2. **Select a workflow** by comparing the requirement with each
-   `workflow-*` Skill's "Use when" and "Not for". If several fit, the most
-   specific wins, or you are asked. If none fits, it composes a
-   **single-point route** for this task from the Skills available in the
-   session, reading their descriptions broadly and opening only the
-   candidates.
-3. **Approve the route as part of the plan.** A single-point route or a changed
-   workflow is approved at the plan's existing approval point (the in-chat
-   design, or the `writing-plans` execution handoff). With one reasonable
-   route, one "yes" approves the design and route together. Only meaningfully
-   different routes are offered as 2–3 options, each with its stages, Skills,
-   cost, and whether Tallyback is used. An approved workflow is reused without
-   asking again.
-4. **Run the route.** Each stage's named Skill must be invoked; a passing
-   command does not replace a required Skill call. Code changes require an
-   `earn-it` review, but invoking the Skill alone does not prove the review
-   produced a verdict. The report lists each stage as executed, skipped,
-   blocked, or substituted, with supporting evidence.
-5. **Update or solidify.** If the run showed a workflow should change, the agent
-   proposes the edit. The edit is applied with an `Updated:` date once you
-   approve. Saving a single-point route as a workflow is suggested only after
-   the run, when you say the problem will recur or history shows it recurring. Workflows are
-   compared by problem type, scope, constraints, and acceptance evidence;
-   identical steps alone don't make them the same. A problem that belongs to
-   an existing workflow reuses it. A distinct, stable problem type may get its
-   own workflow. Otherwise the single-point route is kept. Narrow workflows are
-   never widened into catch-alls.
+- **Facts and decisions.** The agent looks facts up itself (the repo,
+  Knowledge Skills, commands, an Explore subagent for broad searches). It asks
+  you only for decisions, one at a time, each with a recommended answer.
+- **Approval.** A single-point route or a changed workflow is approved at the
+  plan's existing approval point: the in-chat design, or the `writing-plans`
+  execution handoff.
+  - With one reasonable route, one "yes" approves the design and the route.
+  - Only meaningfully different routes are offered as 2–3 options. Each shows
+    its stages, Skills, cost, and whether Tallyback is used.
+- **Execution.**
+  - A passing command does not replace a required Skill call.
+  - Every code change gets an `earn-it` review. Only findings with evidence
+    are fixed, then re-verified.
+- **Small tasks** get a short requirement check and a short route, not
+  ceremony.
 
-Example narrowly scoped workflow Skills: `workflow-cli-option-change`,
-`workflow-iterator-wrong-result`, `workflow-db-schema-migration`.
-These are examples, not prescribed categories.
-
-Understanding the requirement always comes first and is not part of a route.
-A route step looks like this
-([template](development-workflow/references/workflow-template.md)):
+A route step uses the
+[workflow template](development-workflow/references/workflow-template.md)
+format:
 
 ```text
 1. Implement — superpowers:test-driven-development — via Skill tool — done when tests pass
-2. Review — earn-it — via Skill tool — done when VERDICT is PASS or findings are fixed
-3. Verify — superpowers:verification-before-completion — via shell commands — done when fresh output is kept
+2. Verify — superpowers:verification-before-completion — via shell commands — done when fresh output is kept
+3. Review — earn-it — via Skill tool — done when a verdict is written and evidence-backed findings are fixed
 ```
 
-Small tasks get a short requirement check and a short route, not ceremony.
-
-**About Tallyback:** it must be installed, but its ledger is used **only when
-work is actually delegated**. The workflow never invents workers or delegation
-to fill a ledger. A worker's "done" is recorded as a Claim, not proof. An
-Earn-it `PASS` never settles a Tallyback task; settlement is a separate,
-explicit `tallyback settle`. When delegation is tracked, Tallyback keeps its
-ledger in a `.tallyback/` directory in the repository.
+Example workflow names are narrow, for example `workflow-cli-option-change` or
+`workflow-iterator-wrong-result`. They are illustrations, not prescribed
+categories.
 
 ### Example
 
@@ -236,90 +243,91 @@ $ cd my-project && claude
 
 $ claude        # first CLI change: no workflow yet
 > Add a --shout flag to app.py that prints the greeting in upper case.
-  → development-workflow → superpowers:brainstorming (bounded: short design)
+  → development-workflow → superpowers:brainstorming (short design)
   → no workflow fits → design + single-point route, one approval
-  → TDD → earn-it → verification-before-completion
+  → TDD → verification → earn-it verdict → stage-by-stage report
 
 > Add a --sort flag too. We add CLI flags all the time.
-  → design + route approval → implementation → review → verification
-  → after the run: "Save this recurring route as workflow-cli-change?"
+  → design + route approval → TDD → verification → earn-it verdict
+  → after the run: "Save this route as workflow-cli-option-change?"
   → separate yes (Claude Code asks permission to write .claude/skills/…)
 
 $ claude        # later, a similar change
 > Add a --name option so it greets that name.
-  → matches workflow-cli-change → only the design is confirmed;
+  → matches workflow-cli-option-change → only the design is approved;
     the route is not asked again
 
 $ claude        # a different kind of problem
 > Add a GitHub Actions CI configuration that runs pytest on every push.
-  → workflow-cli-change says "Not for: CI" → design + single-point route
+  → workflow-cli-option-change says "Not for: CI" → design + single-point route
 ```
 
-## Component boundaries
+## Evidence and known limitations
 
-- **development-workflow** only chooses, connects, and hands off.
-- **Workflow Skills** (`workflow-*`, per repository) hold approved routes only,
-  one kind of problem each: which capabilities, in which order, connected how.
-  No procedures, no knowledge.
-- **Superpowers** owns the development method.
-- **Tallyback** owns the delegated-work ledger.
-- **Earn-it** owns implementation review. Its verdict does not replace tests.
-- **Knowledge Skills** hold verified, reusable understanding. They never go in
-  `AGENTS.md`, and not every task produces one.
+### Evidence
 
-Evidence order: repository facts and executable checks > Git facts > Tallyback
-records > agent claims.
+- **What was run.** The workflow was exercised in isolated, headless Claude
+  Code sessions (2.1.283, Sonnet) on historical `more-itertools` tasks, with
+  scripted approvals.
+- **Functional results.** Every task implementation passed its independent
+  hidden acceptance tests.
+- **Workflow reuse:**
+  - a bug-fix workflow proposed by the agent after its first run was selected
+    in each later bug-fix session;
+  - one feature workflow, written by the experimenter rather than saved by an
+    agent, was selected in its single reuse check;
+  - neighbouring workflows were rejected by their "Not for".
+- **CLAUDE.md bridge.** Init behaviour was checked in 11 isolated repository
+  scenarios: new or existing files, decline, a repeated run, v0.1 migration,
+  a symlink, and a read-only file. These tests found one defect, an
+  overwritten read-only file, which was fixed and re-tested. A live check
+  confirmed that `@AGENTS.md`
+  is imported and that `development-workflow` is invoked through it.
+- **What this does not show.** These are small samples. They are **not proof
+  that workflows improve functional correctness or reduce cost**, and no
+  comparison without the Skill was run. An instruction-only Earn-it A/B test
+  (two runs per arm) showed no incremental benefit, and that wording was not
+  adopted.
 
-## Evidence and limitations
-
-The workflow has been exercised in isolated Claude Code sessions on
-historical `more-itertools` tasks. Five task implementations passed their
-independent functional acceptance tests, and two matching saved workflows
-were selected correctly in reuse checks. These are small-sample observations,
-**not proof that workflows improve functional correctness or reduce cost**.
-An Earn-it instruction-only A/B test (two runs per arm) did not establish
-an incremental benefit; that experimental wording was not adopted.
-
-## Known limitations
+### Known limitations
 
 - **Verified on Claude Code only** (2.1.x, with Superpowers 6.4.1,
-  Tallyback 0.1.0, and Earn-it 0.1.0). Other agent hosts that read `AGENTS.md`
+  Tallyback 0.1.0 and Earn-it 0.1.0). Other agent hosts that read `AGENTS.md`
   have not been tested and are not claimed to be compatible.
-- **Routing is instruction-based**, not enforced. It was checked with a small
-  number of real headless sessions. The model can still choose differently,
-  for example skipping a plan when it judges a task simple.
-- **Earn-it verdicts are not always written.** In headless evaluation runs the
-  `earn-it` Skill was always invoked, but in some runs no verdict was written
-  before the task was reported complete. The agent then reported the review
-  stage as open rather than claiming it ran. Check that the report contains a
-  verdict.
-- **Knowledge capture** (creating a new Knowledge Skill) and **delegated work
-  tracked with Tallyback** under workflow-first routing have not been exercised
-  in testing.
-- **Workflow tool steps:** Claude Code requires the user's explicit opt-in for
-  the Workflow tool. Picking a route option that names a Workflow step is meant
-  as that opt-in, but this has not been verified.
+- **Routing is instruction-based, not enforced.** The model can still choose
+  differently. For example, it once asked to re-approve an unchanged
+  workflow's route.
+- **Earn-it verdicts are not always written.** The Skill was always invoked,
+  but in some runs no verdict was written before the task was reported
+  complete. The agent then reported the review stage as open, rather than
+  claiming it ran. Check that the report contains a verdict.
+- **Not exercised in testing:**
+  - knowledge capture, i.e. creating a new Knowledge Skill;
+  - delegated work tracked with Tallyback;
+  - the architectural `writing-plans` path.
+- **Workflow tool steps.** Claude Code requires your explicit opt-in for the
+  Workflow tool. Picking a route option that names a Workflow step is meant as
+  that opt-in, but this has not been verified.
 - **`CLAUDE.md` and `AGENTS.md` in Claude Code.** Observed in 2.1.283:
-  - Claude Code's built-in AGENTS.md support loads `AGENTS.md` only when the
-    repository has no `CLAUDE.md`. An existing `CLAUDE.md` without the import
-    hides `AGENTS.md` from Claude Code, which is why init adds the import.
-  - With the import, the rules are loaded once, not twice.
+  - the built-in AGENTS.md support loads `AGENTS.md` only when the repository
+    has no `CLAUDE.md`, so an existing `CLAUDE.md` without the import hides
+    `AGENTS.md`;
+  - with the import, the instructions are loaded once, not twice.
 
   Init manages only the root `CLAUDE.md`, not `.claude/CLAUDE.md` or
-  `CLAUDE.local.md`. A `CLAUDE.md` that is a symlink, for example one pointing
-  to `AGENTS.md`, is reported BLOCKED instead of being rewritten.
-- **Headless sessions** (`claude -p`) cannot ask interactive questions. The
+  `CLAUDE.local.md`. A symlinked `CLAUDE.md` is reported BLOCKED rather than
+  rewritten.
+- **Headless sessions (`claude -p`)** cannot ask interactive questions. The
   agent presents the design with its route (or route options) as text and
   stops.
-- **Saving a workflow writes under `.claude/`**, which Claude Code protects
-  with its own permission prompt (that prompt is part of the approval). In
-  headless sessions the write is refused even with an allow rule, so the agent
-  shows the file content and stops. The interactive prompt itself has not been
-  exercised in testing; saving was tested by writing the approved file by
-  hand.
-- **No automated test suite in this repository.** Skill behavior was checked
+- **Interactive prompts not exercised.** That covers interactive
+  `AskUserQuestion` and the `.claude/` permission prompt. Saving a workflow
+  writes under `.claude/`, which Claude Code guards with its own prompt (part
+  of the approval). In headless sessions that write is refused, so the agent
+  shows the file content and stops.
+- **No automated test suite in this repository.** Behaviour was checked
   through isolated Claude Code sessions. A separate local evaluation harness
-  was used for trace-based checks; it is not shipped as part of this Skill.
+  was used for trace-based checks; it is not shipped with this Skill.
 - **Tallyback ships from source only** and needs Node.js 20+.
 
 ## License
