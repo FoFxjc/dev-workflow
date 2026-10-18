@@ -8,11 +8,12 @@ A minimal, Skill-native development workflow for coding agents.
 [Agent Skill](development-workflow/SKILL.md) that turns each development
 request into a **route**, an ordered chain of existing Skills connected by
 Claude Code's native capabilities (the Skill tool, subagents,
-`AskUserQuestion`, plan approval, worktrees, the Workflow tool). Routes you
-approve are stored as **workflow Skills** in the repository, one per kind of
-problem (`.claude/skills/workflow-<type>/SKILL.md`), so a dynamic workflow
-becomes a fixed one. Workflow first, single-point second: when no workflow fits,
-a route is composed for that one task and can later be saved as a new workflow.
+`AskUserQuestion`, plan approval, worktrees, the Workflow tool). Routes worth
+keeping are saved, with your separate approval after a run, as **workflow
+Skills** in the repository, one per kind of problem
+(`.claude/skills/workflow-<type>/SKILL.md`), so a dynamic workflow becomes a
+fixed one. Workflow first, single-point second: when no workflow fits, a route
+is composed for that one task and can later be saved as a new workflow.
 
 Capabilities come from any installed Skill: built-in, plugin, user, or
 project. Three are required:
@@ -241,7 +242,13 @@ records > agent claims.
 - **Routing is instruction-based**, not enforced. It was checked with a small
   number of real headless sessions. The model can still choose differently,
   for example skipping a plan when it judges a task simple.
-- **Knowledge capture** (creating a new Knowledge Skill) has not been exercised
+- **Earn-it verdicts are not always written.** In headless evaluation runs the
+  `earn-it` Skill was always invoked, but in some runs no verdict was written
+  before the task was reported complete. The agent then reported the review
+  stage as open rather than claiming it ran. Check that the report contains a
+  verdict.
+- **Knowledge capture** (creating a new Knowledge Skill) and **delegated work
+  tracked with Tallyback** under workflow-first routing have not been exercised
   in testing.
 - **Workflow tool steps:** Claude Code requires the user's explicit opt-in for
   the Workflow tool. Picking a route option that names a Workflow step is meant
